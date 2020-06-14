@@ -15,7 +15,8 @@ namespace Server.Data
             get { return _db; }
         }
 
-        public static PlayerData Players;
+        public static PlayerData Players = new PlayerData();
+        public static DeviceData Devices = new DeviceData();
 
         static DataContext()
         {
@@ -24,8 +25,6 @@ namespace Server.Data
             config.MaxConnections = 256;
             _db = new Connection(config);
             FireAndForget.MainConnection = _db;
-
-            Players = new PlayerData();
         }
     }
 }

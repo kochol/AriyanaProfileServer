@@ -31,6 +31,29 @@ namespace Server.Controllers
             return GenerateJSONWebToken(player);
         }
 
+        [HttpGet("{deviceId}/{platformName}/{deviceInfo}")]
+        public async Task<ActionResult<string>> Get(string deviceId, string platformName, string deviceInfo)
+        {
+            var player = await DataContext.Players.GetPlayerByDeviceId(deviceId);
+            if (player == null)
+            {
+                // Create a new player
+                player = new Player();
+                player.RegisterDate = DateTime.UtcNow;
+                player.LastLogin = DateTime.UtcNow;
+                player = await DataContext.Players.AddPlayer(player);
+
+                // Add the device to the database
+                var dev = new Device();
+                dev.Info = deviceInfo;
+                dev.PlatformName = platformName;
+                dev.PlayerId = player.Id;
+                await DataContext.Devices.AddDevice(dev);
+            }
+
+            return GenerateJSONWebToken(player);
+        }
+
         private string GenerateJSONWebToken(Player userInfo)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
