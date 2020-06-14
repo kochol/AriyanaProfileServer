@@ -23,6 +23,7 @@ namespace Server.Data
             config.EndPoint = new IPEndPoint(IPAddress.Loopback, 6379);
             config.MaxConnections = 256;
             _db = new Connection(config);
+            FireAndForget.MainConnection = _db;
 
             Players = new PlayerData();
         }
