@@ -1,4 +1,10 @@
 
+# Folders
+
 Server/.vs
 Server/obj
 Server/bin
+
+# Files
+
+*.user
