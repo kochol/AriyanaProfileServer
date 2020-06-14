@@ -13,6 +13,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using NSwag;
+using NSwag.Generation.Processors.Security;
 
 namespace Server
 {
@@ -33,7 +35,20 @@ namespace Server
             services.AddControllers();
 
             //add the Swagger services
-            services.AddSwaggerDocument();
+            services.AddSwaggerDocument(document =>
+            {
+                document.AddSecurity("JWT", Enumerable.Empty<string>(), new OpenApiSecurityScheme
+                {
+                    Type = OpenApiSecuritySchemeType.ApiKey,
+                    Name = "Authorization",
+                    In = OpenApiSecurityApiKeyLocation.Header,
+                    Description = "Type into the textbox: Bearer {your JWT token}."
+                });
+
+                document.OperationProcessors.Add(
+                    new AspNetCoreOperationSecurityScopeProcessor("JWT"));
+                //      new OperationSecurityScopeProcessor("JWT"));
+            });
 
             // configure jwt authentication
             var key = Encoding.ASCII.GetBytes(Configuration["Jwt:Key"]);
