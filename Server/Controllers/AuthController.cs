@@ -45,6 +45,7 @@ namespace Server.Controllers
 
                 // Add the device to the database
                 var dev = new Device();
+                dev.Id = deviceId;
                 dev.Info = deviceInfo;
                 dev.PlatformName = platformName;
                 dev.PlayerId = player.Id;
@@ -62,7 +63,7 @@ namespace Server.Controllers
 
             var claims = new[] {
                 new Claim(JwtRegisteredClaimNames.Sub, userInfo.Id.ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, userInfo.Email),
+                //new Claim(JwtRegisteredClaimNames.Email, userInfo.Email),
                 //new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 

@@ -19,22 +19,22 @@ namespace Server.Data
         public async ValueTask<Player> AddPlayer(Player player)
         {
             // first check for duplication
-            if (player.UserName.Length > 0 && GetPlayerByUserName(player.UserName) != null)
+            if ((!string.IsNullOrEmpty(player.UserName) && await GetPlayerByUserName(player.UserName) != null) || player.UserName.StartsWith("Guest"))
                 throw new Exception("A player with same user name exist");
-            if (player.Email.Length > 0 && GetPlayerByEmail(player.Email) != null)
+            if (!string.IsNullOrEmpty(player.Email) && await GetPlayerByEmail(player.Email) != null)
                 throw new Exception("A player with same email exist");
 
             using var db = await DataContext.Db.GetDatabaseAsync(DatabaseName.Players);
 
             // assign an Id and username
             player.Id = await db.Value.StringIncr("p:id", 1);
-            if (player.UserName.Length == 0)
+            if (string.IsNullOrEmpty(player.UserName))
                 player.UserName = "Guest" + player.Id;
 
             // save player
             await db.Value.StringSetAsync("p:" + player.Id, MessagePackSerializer.Serialize(player));
             await db.Value.StringSetAsync("p:u:" + player.UserName, player.Id);
-            if (player.Email.Length > 0)
+            if (!string.IsNullOrEmpty(player.Email))
                 await db.Value.StringSetAsync("p:e:" + player.Email, player.Id);
 
             return player;

@@ -17,7 +17,7 @@ namespace Server.Data
         public async ValueTask AddDevice(Device device)
         {
             // check for duplicate
-            if (device.Id.Length == 0 && GetDeviceById(device.Id) != null)
+            if (string.IsNullOrEmpty(device.Id) || await GetDeviceById(device.Id) != null)
                 throw new Exception("The device is already exists or its Id is null");
 
             var db = await DataContext.Db.GetDatabaseAsync(DatabaseName.Devices);
