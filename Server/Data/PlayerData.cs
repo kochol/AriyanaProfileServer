@@ -39,7 +39,7 @@ namespace Server.Data
 
             return player;
         }
-        
+
         /// <summary>
         /// Get player by Id
         /// </summary>
@@ -99,5 +99,24 @@ namespace Server.Data
             return await GetPlayerById(dev.PlayerId);
         }
 
+        /// <summary>
+        /// Update the player
+        /// </summary>
+        /// <param name="player">Player to update</param>
+        /// <returns></returns>
+        public async ValueTask UpdatePlayerAsync(Player player)
+        {
+            using var db = await DataContext.Db.GetDatabaseAsync(DatabaseName.Players);
+            await db.Value.StringSetAsync("p:" + player.Id, MessagePackSerializer.Serialize(player));
+        }
+
+        /// <summary>
+        /// Update player in fire and forget mode
+        /// </summary>
+        /// <param name="player">Player to update</param>
+        public void UpdatePlayerFAF(Player player)
+        {
+            FireAndForget.StringSet(DatabaseName.Players, "p:" + player.Id, MessagePackSerializer.Serialize(player));
+        }
     }
 }
