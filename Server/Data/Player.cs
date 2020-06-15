@@ -9,7 +9,9 @@ namespace Server.Data
     public enum AccountStatusEnum
     {
         Active,
-        Blocked
+        Blocked,
+        Online,
+        Offline
     }
 
     [MessagePackObject]

@@ -39,6 +39,7 @@ namespace Server.Controllers
             {
                 // Create a new player
                 player = new Player();
+                player.AccountStatus = AccountStatusEnum.Online;
                 player.RegisterDate = DateTime.UtcNow;
                 player.LastLogin = DateTime.UtcNow;
                 player = await DataContext.Players.AddPlayer(player);
@@ -53,7 +54,11 @@ namespace Server.Controllers
             }
             else
             {
+                if (player.AccountStatus == AccountStatusEnum.Blocked)
+                    return BadRequest("The player is blocked from server");
+
                 player.LastLogin = DateTime.UtcNow;
+                player.AccountStatus = AccountStatusEnum.Online;
                 DataContext.Players.UpdatePlayerFAF(player);
             }
 
