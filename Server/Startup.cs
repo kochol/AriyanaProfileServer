@@ -81,6 +81,9 @@ namespace Server
                         RequireExpirationTime = true,
                         ClockSkew = new TimeSpan(0, 15, 0),
 
+                        // Ensure that User.Identity.Name is set correctly after login
+                        NameClaimType = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier",
+
                         ValidateActor = false,
                     };
                 });

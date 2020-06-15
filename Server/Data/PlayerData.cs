@@ -19,7 +19,9 @@ namespace Server.Data
         public async ValueTask<Player> AddPlayer(Player player)
         {
             // first check for duplication
-            if ((!string.IsNullOrEmpty(player.UserName) && await GetPlayerByUserName(player.UserName) != null) || player.UserName.StartsWith("Guest"))
+            if ((!string.IsNullOrEmpty(player.UserName) && await GetPlayerByUserName(player.UserName) != null))
+                throw new Exception("A player with same user name exist");
+            if (!string.IsNullOrEmpty(player.UserName) && player.UserName.StartsWith("Guest"))
                 throw new Exception("A player with same user name exist");
             if (!string.IsNullOrEmpty(player.Email) && await GetPlayerByEmail(player.Email) != null)
                 throw new Exception("A player with same email exist");
