@@ -17,6 +17,7 @@ namespace Server.Data
 
         public static PlayerData Players = new PlayerData();
         public static DeviceData Devices = new DeviceData();
+        public static LobbyData Lobbies = new LobbyData();
 
         static DataContext()
         {

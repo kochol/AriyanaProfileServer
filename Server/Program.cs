@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Server.Data;
 
 namespace Server
 {
@@ -13,6 +14,8 @@ namespace Server
     {
         public static void Main(string[] args)
         {
+            Task.Run(async () => await LobbyManager.MakeMatches());
+
             CreateHostBuilder(args).Build().Run();
         }
 

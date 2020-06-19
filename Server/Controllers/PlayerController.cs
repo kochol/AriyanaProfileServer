@@ -21,5 +21,15 @@ namespace Server.Controllers
             player.Password = null;
             return player;
         }
+
+        /// <summary>
+        /// Player calls this method to get a lobby ID
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("lobby")]        
+        public async Task<ActionResult<long>> GetLobby()
+        {
+            return await LobbyManager.AutoJoin(long.Parse(User.Identity.Name));           
+        }
     }
 }

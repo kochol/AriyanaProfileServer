@@ -21,6 +21,7 @@ namespace Server.Data
         {
             LastLogin = null;
             AccountStatus = AccountStatusEnum.Active;
+            MMR = 2000;
         }
 
         [IgnoreMember]
@@ -43,5 +44,8 @@ namespace Server.Data
 
         [Key(5)]
         public string Email { get; set; }
+
+        [Key(6)]
+        public int MMR { get; set; }
     }
 }
