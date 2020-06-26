@@ -23,8 +23,10 @@ namespace Server.Data
 
         public static string ServerExeLocation = "D:/my/fips/block-heroes/build/ServerDebug_Win64/block-heroes";
         public static string ServerExeFileName = "block-heroes.exe";
-        private static List<(Process process, long lobby_id)> processes = new List<(Process process, long lobby_id)>();
+        private static List<(Process process, long lobby_id, int port)> processes = new List<(Process process, long lobby_id, int port)>();
         public static bool Run = true;
+        public static int LastPort = 10000;
+        static Queue<int> UnusedPorts = new Queue<int>();
 
         /// <summary>
         /// The number of teams that each game has
@@ -67,6 +69,7 @@ namespace Server.Data
                     if (item.process.HasExited)
                     {
                         DataContext.Lobbies.DeleteLobbyAsync(item.lobby_id).Wait();
+                        UnusedPorts.Enqueue(item.port);
                         return true;
                     }
                     return false;
@@ -103,13 +106,25 @@ namespace Server.Data
                     System.Diagnostics.Process process = new System.Diagnostics.Process();
                     System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
 
+                    // get a port number
+                    int port = LastPort;
+                    if (UnusedPorts.Count > 0)
+                    {
+                        port = UnusedPorts.Dequeue();
+                    }
+                    else
+                    {
+                        LastPort++;
+                    }
+
                     // Create command                
                     startInfo.WorkingDirectory = ServerExeLocation;
-                    string cmd = $"{ServerExeLocation}/{ServerExeFileName}";
+                    string cmd = $"{ServerExeLocation}/{ServerExeFileName} -p {port}";
+                    
 
                     if (isWindows)
                     {
-                        //startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
+                        startInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
                         startInfo.FileName = "cmd.exe";
                         startInfo.Arguments = $"/C {cmd}";
                     }
@@ -124,7 +139,7 @@ namespace Server.Data
                     process.StartInfo = startInfo;
                     process.Start();
 
-                    processes.Add((process, lobby.Id));
+                    processes.Add((process, lobby.Id, port));
 
                     // Remove players from waiting list
                     PlayerWaitingData pd;
@@ -138,6 +153,16 @@ namespace Server.Data
                 await Task.Delay(1000);
 
             } // While Run
+        }
+
+        public static void OnExit()
+        {
+            foreach (var p in processes)
+            {
+                DataContext.Lobbies.DeleteLobbyAsync(p.lobby_id).Wait();
+                p.process.Kill();
+            }
+            processes.Clear();
         }
     }
 }
