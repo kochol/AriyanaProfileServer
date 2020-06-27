@@ -27,7 +27,7 @@ namespace Server.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("lobby")]        
-        public async Task<ActionResult<long>> GetLobby()
+        public async Task<ActionResult<Lobby>> GetLobby()
         {
             return await LobbyManager.AutoJoin(long.Parse(User.Identity.Name));           
         }

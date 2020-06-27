@@ -40,7 +40,7 @@ namespace Server.Data
 
         private static ConcurrentDictionary<long, PlayerWaitingData> WaitingList = new ConcurrentDictionary<long, PlayerWaitingData>();
         
-        public static async ValueTask<long> AutoJoin(long player_id)
+        public static async ValueTask<Lobby> AutoJoin(long player_id)
         {
             // 1: Check if the player is in a Lobby or not?
             var lobby = await DataContext.Lobbies.GetPlayerLobby(player_id);
@@ -53,10 +53,9 @@ namespace Server.Data
                 pd.LastRequestTime = DateTime.UtcNow.Ticks;
                 pd.MMR = p.MMR;
                 WaitingList.AddOrUpdate(player_id, pd, (key, oldvalue) => pd);
-                return 0;
             }
 
-            return lobby.Id;
+            return lobby;
         }
 
         public static async ValueTask MakeMatches()
@@ -76,14 +75,38 @@ namespace Server.Data
                 });
 
                 // Check the waiting lists
+                var time = DateTime.UtcNow.Ticks;
                 var list = WaitingList.ToList();
                 list.Sort((x, y) => x.Value.MMR.CompareTo(y.Value.MMR));
+
+                // Remove the players that they didn't update their request in last 5 seconds
+                list.RemoveAll(i =>
+                {
+                    if (TimeSpan.FromTicks(time - i.Value.LastRequestTime).TotalSeconds > 5)
+                    {
+                        PlayerWaitingData temp;
+                        WaitingList.TryRemove(i.Key, out temp);
+                        return true;
+                    }
+                    return false;
+                });
 
                 int neededPlayers = TeamCount * TeamPlayerCount;
                 for (int i = 0; i < list.Count; i += neededPlayers)
                 {
                     if (i + neededPlayers - 1 >= list.Count)
                         break;
+
+                    // get a port number
+                    int port = LastPort;
+                    if (UnusedPorts.Count > 0)
+                    {
+                        port = UnusedPorts.Dequeue();
+                    }
+                    else
+                    {
+                        LastPort++;
+                    }
 
                     // Create a lobby for these players
                     Lobby lobby = new Lobby();
@@ -97,6 +120,8 @@ namespace Server.Data
                         for (int t = 0; t < TeamCount; t++)
                             lobby.Teams[t].Add(list[i + t * TeamPlayerCount + p].Key);
                     }
+                    lobby.ServerIp = Program.ServerIP;
+                    lobby.ServerPort = port;
                     await DataContext.Lobbies.AddLobby(lobby);
 
                     // Lunch a server program
@@ -105,17 +130,6 @@ namespace Server.Data
 
                     System.Diagnostics.Process process = new System.Diagnostics.Process();
                     System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
-
-                    // get a port number
-                    int port = LastPort;
-                    if (UnusedPorts.Count > 0)
-                    {
-                        port = UnusedPorts.Dequeue();
-                    }
-                    else
-                    {
-                        LastPort++;
-                    }
 
                     // Create command                
                     startInfo.WorkingDirectory = ServerExeLocation;
