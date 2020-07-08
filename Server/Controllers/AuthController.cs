@@ -21,11 +21,42 @@ namespace Server.Controllers
             _config = configuration;
         }
 
+        /// <summary>
+        /// Register a new player so he/she can login on other devices
+        /// </summary>
+        /// <param name="deviceId"></param>
+        /// <param name="Username"></param>
+        /// <param name="Password"></param>
+        /// <returns></returns>
+        [HttpGet("Register/{deviceId}/{Username}/{Password}")]
+        public async Task<ActionResult<string>> Register(string deviceId, string Username, string Password)
+        {
+            var player = await DataContext.Players.GetPlayerByDeviceId(deviceId);
+            if (player == null)
+                return BadRequest("Device id not found");
+
+            if (!string.IsNullOrEmpty(player.Password))
+                return BadRequest("The player already registered");
+
+            if (player.UserName.StartsWith("Guest"))
+                return BadRequest("The user name is already taken");
+
+            var p = await DataContext.Players.GetPlayerByUserName(Username);
+            if (p != null)
+                return BadRequest("The user name is already taken");
+
+            player.UserName = Username;
+            player.Password = Password;
+
+            await DataContext.Players.UpdatePlayerAsync(player);
+            return Ok("OK");
+        }
+
         [HttpGet("{Username}/{Password}")]
         public async Task<ActionResult<string>> Get(string Username, string Password)
         {
             var player = await DataContext.Players.GetPlayerByUserName(Username);
-            if (player == null || player.Password != Password)
+            if (player == null || string.IsNullOrEmpty(player.Password) || player.Password != Password)
                 return BadRequest();
 
             return GenerateJSONWebToken(player);
