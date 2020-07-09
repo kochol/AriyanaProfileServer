@@ -101,6 +101,14 @@ namespace Server.Data
             return await GetPlayerById(dev.PlayerId);
         }
 
+        public async ValueTask UpdatePlayerUserNameAsync(Player player, string newUsername)
+        {
+            using var db = await DataContext.Db.GetDatabaseAsync(DatabaseName.Players);
+            await db.Value.KeyDeleteAsync("p:u:" + player.UserName);
+            await db.Value.StringSetAsync("p:u:" + newUsername, player.Id);
+            player.UserName = newUsername;
+        }
+
         /// <summary>
         /// Update the player
         /// </summary>
