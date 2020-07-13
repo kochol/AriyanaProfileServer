@@ -19,6 +19,10 @@ namespace Server.Controllers
         public AuthController(IConfiguration configuration)
         {
             _config = configuration;
+            if (LobbyManager._config == null)
+            {
+                LobbyManager._config = _config;
+            }
         }
 
         /// <summary>
@@ -104,6 +108,7 @@ namespace Server.Controllers
 
             var claims = new[] {
                 new Claim(JwtRegisteredClaimNames.Sub, userInfo.Id.ToString()),
+                new Claim(ClaimTypes.Role, "player"),
                 //new Claim(JwtRegisteredClaimNames.Email, userInfo.Email),
                 //new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };

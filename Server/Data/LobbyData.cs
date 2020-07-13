@@ -81,6 +81,12 @@ namespace Server.Data
             return lobby;
         }
 
+        public async ValueTask UpdateLobbyAsync(Lobby lobby)
+        {
+            using var db = await DataContext.Db.GetDatabaseAsync(DatabaseName.Games);
+
+            await db.Value.StringSetAsync("l:" + lobby.Id, MessagePackSerializer.Serialize(lobby));
+        }
 
     }
 }

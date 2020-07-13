@@ -1,11 +1,16 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Server.Data
@@ -27,6 +32,8 @@ namespace Server.Data
         public static bool Run = true;
         public static int LastPort = 10000;
         static Queue<int> UnusedPorts = new Queue<int>();
+
+        public static IConfiguration _config = null;
 
         /// <summary>
         /// The number of teams that each game has
@@ -56,6 +63,28 @@ namespace Server.Data
             }
 
             return lobby;
+        }
+
+        static string GenerateTokenForServer()
+        {
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+
+            var claims = new[] {
+                new Claim(JwtRegisteredClaimNames.Sub, "0"),
+                new Claim(ClaimTypes.Role, "server"),
+                //new Claim(JwtRegisteredClaimNames.Email, userInfo.Email),
+                //new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
+
+            var token = new JwtSecurityToken(_config["Jwt:Issuer"],
+                _config["Jwt:Issuer"],
+                claims,
+                expires: DateTime.Now.AddMinutes(1200),
+                signingCredentials: credentials);
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
         public static async ValueTask MakeMatches()
@@ -131,10 +160,12 @@ namespace Server.Data
                     System.Diagnostics.Process process = new System.Diagnostics.Process();
                     System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
 
+                    // Create a token for server
+                    string server_token = GenerateTokenForServer();
+
                     // Create command                
                     startInfo.WorkingDirectory = ServerExeLocation;
-                    string cmd = $"{ServerExeLocation}/{ServerExeFileName} -p {port}";
-                    
+                    string cmd = $"{ServerExeLocation}/{ServerExeFileName} -i {Program.ServerIP} -p {port} -t {server_token} -l {lobby.Id}";                   
 
                     if (isWindows)
                     {
