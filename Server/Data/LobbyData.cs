@@ -76,8 +76,6 @@ namespace Server.Data
                 FireAndForget.KeyDelete(DatabaseName.Games, "l:p:" + player_id);
             }
 
-            // TODO: I set this to null until we fix the json parse bug in beef
-            lobby.Teams = null;
             return lobby;
         }
 
