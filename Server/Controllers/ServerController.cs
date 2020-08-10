@@ -26,6 +26,13 @@ namespace Server.Controllers
             return Ok();
         }
 
+        [HttpGet("get_lobby/{lobbyId}")]
+        public async Task<ActionResult<Lobby>> GetLobby(long lobbyId)
+        {
+            var lobby = await DataContext.Lobbies.GetLobbyById(lobbyId);
+            return lobby;
+        }
+
         [HttpPost("save_game")]
         public async Task<ActionResult<long>> SaveGame(Game game)
         {

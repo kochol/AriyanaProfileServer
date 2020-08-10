@@ -14,6 +14,8 @@ namespace Server.Data
 
             // assign id
             game.Id = await db.Value.StringIncr("g:id", 1);
+            if (game.PlayTime == null)
+                game.PlayTime = DateTime.UtcNow;
 
             // save the game to db
             await db.Value.StringSetAsync("g:" + game.Id, MessagePackSerializer.Serialize(game));
