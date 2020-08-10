@@ -17,6 +17,13 @@ namespace Server.Controllers
     [Authorize(Roles = "server")]
     public class ServerController : ControllerBase
     {
+/*        [AllowAnonymous]
+        [HttpGet("get_token")]
+        public string GetToken()
+        {
+            return LobbyManager.GenerateTokenForServer();
+        }*/
+
         [HttpGet("game_start/{lobbyId}")]
         public async Task<ActionResult> GameStarted(long lobbyId)
         {
@@ -50,18 +57,14 @@ namespace Server.Controllers
             // Arguments: Stream, Encoding, detect encoding, buffer size 
             // AND, the most important: keep stream opened
             int size = (int)Request.ContentLength;
-            var b = new char[size];
+            var b = new byte[size];
 
-            using (StreamReader reader
-                      = new StreamReader(Request.Body, null, false, size , true))
-            {
-                size = await reader.ReadAsync((char[])b, 0, size);
-            }
+            size = await Request.Body.ReadAsync(b, 0, size);
 
             // Rewind, so the core is not lost when it looks the body for the request
             Request.Body.Position = 0;
 
-            await System.IO.File.WriteAllBytesAsync("replays/" + game_id + ".zip", b.Select(c => (byte)c).ToArray());
+            await System.IO.File.WriteAllBytesAsync("replays/" + game_id + ".zip", b);
 
             return Ok();
         }
