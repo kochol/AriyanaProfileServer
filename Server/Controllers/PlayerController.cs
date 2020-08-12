@@ -34,6 +34,7 @@ namespace Server.Controllers
         }
 
         [HttpPost("games/{offset}/{count}")]
+        [HttpGet("games/{offset}/{count}")]
         public async Task<ActionResult<List<Game>>> GetGames(int offset, int count)
         {
             return await DataContext.Games.GetPlayerGames(

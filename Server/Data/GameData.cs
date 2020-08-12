@@ -39,7 +39,9 @@ namespace Server.Data
             if (game_data == null)
                 return null;
 
-            return MessagePackSerializer.Deserialize<Game>((byte[])game_data);
+            var game = MessagePackSerializer.Deserialize<Game>((byte[])game_data);
+            game.Id = game_id;
+            return game;
         }        
         public async ValueTask<List<Game>> GetPlayerGames(long player_Id, int offset, int count)
         {
