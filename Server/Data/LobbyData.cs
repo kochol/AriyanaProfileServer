@@ -11,7 +11,7 @@ namespace Server.Data
     {
         public async ValueTask<long> AddLobby(Lobby lobby)
         {
-            using var db = await DataContext.Db.GetDatabaseAsync(DatabaseName.Games);
+            using var db = await DataContext.Db.GetDatabaseAsync(DatabaseName.Lobbies);
             lobby.Id = await db.Value.StringIncr("l:id", 1);
 
             await db.Value.StringSetAsync("l:" + lobby.Id, MessagePackSerializer.Serialize(lobby));
@@ -36,16 +36,16 @@ namespace Server.Data
             {
                 foreach (var p in t)
                 {
-                    FireAndForget.KeyDelete(DatabaseName.Games, "l:p:" + p);
+                    FireAndForget.KeyDelete(DatabaseName.Lobbies, "l:p:" + p);
                 }
             }
 
-            FireAndForget.KeyDelete(DatabaseName.Games, "l:" + lobby_id);
+            FireAndForget.KeyDelete(DatabaseName.Lobbies, "l:" + lobby_id);
         }
 
         public async ValueTask<Lobby> GetLobbyById(long lobby_id)
         {
-            using var db = await DataContext.Db.GetDatabaseAsync(DatabaseName.Games);
+            using var db = await DataContext.Db.GetDatabaseAsync(DatabaseName.Lobbies);
             var l = await db.Value.StringGetAsync("l:" + lobby_id);
             if (l == null)
                 return null;
@@ -63,7 +63,7 @@ namespace Server.Data
         public async ValueTask<Lobby> GetPlayerLobby(long player_id)
         {
             long lobby_id = 0;
-            using (var db = await DataContext.Db.GetDatabaseAsync(DatabaseName.Games))
+            using (var db = await DataContext.Db.GetDatabaseAsync(DatabaseName.Lobbies))
                 lobby_id = Database.ToLong(await db.Value.StringGetAsync("l:p:" + player_id));
 
             if (lobby_id == 0)
@@ -73,7 +73,7 @@ namespace Server.Data
             if (lobby == null)
             {
                 // delete player from deleted lobby
-                FireAndForget.KeyDelete(DatabaseName.Games, "l:p:" + player_id);
+                FireAndForget.KeyDelete(DatabaseName.Lobbies, "l:p:" + player_id);
             }
 
             return lobby;

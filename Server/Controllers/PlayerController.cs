@@ -26,10 +26,19 @@ namespace Server.Controllers
         /// Player calls this method to get a lobby ID
         /// </summary>
         /// <returns></returns>
-        [HttpGet("lobby")]        
+        [HttpPost("lobby")]  
+        [HttpGet("lobby")]
         public async Task<ActionResult<Lobby>> GetLobby()
         {
             return await LobbyManager.AutoJoin(long.Parse(User.Identity.Name));           
+        }
+
+        [HttpPost("games/{offset}/{count}")]
+        public async Task<ActionResult<List<Game>>> GetGames(int offset, int count)
+        {
+            return await DataContext.Games.GetPlayerGames(
+                long.Parse(User.Identity.Name), offset, count
+                );
         }
     }
 }
