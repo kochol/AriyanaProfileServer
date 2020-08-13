@@ -21,5 +21,8 @@ namespace Server.Data
 
         [Key(3)]
         public string Version { get; set; }
+
+        [Key(4)]
+        public double GameDuration { get; set; }
     }
 }
