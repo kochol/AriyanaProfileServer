@@ -41,5 +41,12 @@ namespace Server.Controllers
                 long.Parse(User.Identity.Name), offset, count
                 );
         }
+
+        [HttpGet("player/name/{player_id}")]
+        public async Task<ActionResult<string>> GetPlayerName(long player_id)
+        {
+            var player = await DataContext.Players.GetPlayerById(long.Parse(User.Identity.Name));
+            return player.UserName;
+        }
     }
 }
