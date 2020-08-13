@@ -42,10 +42,10 @@ namespace Server.Controllers
                 );
         }
 
-        [HttpGet("player/name/{player_id}")]
+        [HttpGet("name/{player_id}")]
         public async Task<ActionResult<string>> GetPlayerName(long player_id)
         {
-            var player = await DataContext.Players.GetPlayerById(long.Parse(User.Identity.Name));
+            var player = await DataContext.Players.GetPlayerById(player_id);
             return player.UserName;
         }
     }
