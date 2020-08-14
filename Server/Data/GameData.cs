@@ -57,6 +57,8 @@ namespace Server.Data
             // Sort the games descending
             var end = len - offset - 1;
             var start = end - count;
+            if (start < 0)
+                start = 0;
             var game_ids = await db.Value.ListRangeAsync("p:g:" + player_Id, start, end);
 
             var res = new List<Game>(count);
