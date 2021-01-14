@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Server.Data;
+using Server.Filters;
 
 namespace Server.Controllers
 {
@@ -15,6 +16,7 @@ namespace Server.Controllers
     public class PlayerController : ControllerBase
     {
         [HttpGet]
+        [Throttle(TimeUnit = TimeUnit.Minute, Count = 5)]
         public async Task<ActionResult<Player>> Get()
         {
             var player = await DataContext.Players.GetPlayerById(long.Parse(User.Identity.Name));
@@ -43,6 +45,7 @@ namespace Server.Controllers
         }
 
         [HttpGet("name/{player_id}")]
+        [Throttle(TimeUnit = TimeUnit.Minute, Count = 100)]
         public async Task<ActionResult<string>> GetPlayerName(long player_id)
         {
             var player = await DataContext.Players.GetPlayerById(player_id);

@@ -38,6 +38,8 @@ namespace Server
 
             services.AddControllers();
 
+            services.AddMemoryCache();
+
             //add the Swagger services
             services.AddSwaggerDocument(document =>
             {

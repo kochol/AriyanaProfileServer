@@ -7,6 +7,8 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Server.Data;
+using Server.Filters;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Server.Controllers
 {
@@ -16,10 +18,10 @@ namespace Server.Controllers
     {
         private readonly IConfiguration _config;
 
-        public AuthController(IConfiguration configuration)
+		public AuthController(IConfiguration configuration)
         {
             _config = configuration;
-            if (LobbyManager._config == null)
+			if (LobbyManager._config == null)
             {
                 LobbyManager._config = _config;
             }
@@ -33,6 +35,7 @@ namespace Server.Controllers
         /// <param name="Password"></param>
         /// <returns></returns>
         [HttpGet("Register/{deviceId}/{Username}/{Password}")]
+        [Throttle(TimeUnit = TimeUnit.Minute, Count = 1)]
         public async Task<ActionResult<string>> Register(long deviceId, string Username, string Password)
         {
             var player = await DataContext.Players.GetPlayerByDeviceId(deviceId.ToString());
@@ -57,6 +60,7 @@ namespace Server.Controllers
         }
 
         [HttpGet("{Username}/{Password}")]
+        [Throttle(TimeUnit = TimeUnit.Minute, Count = 5)]
         public async Task<ActionResult<string>> Get(string Username, string Password)
         {
             var player = await DataContext.Players.GetPlayerByUserName(Username);
@@ -67,6 +71,7 @@ namespace Server.Controllers
         }
 
         [HttpGet("{deviceId}/{platformName}/{deviceInfo}")]
+        [Throttle(TimeUnit = TimeUnit.Minute, Count = 1)]
         public async Task<ActionResult<string>> Get(long deviceId, string platformName, string deviceInfo)
         {
             var player = await DataContext.Players.GetPlayerByDeviceId(deviceId.ToString());
